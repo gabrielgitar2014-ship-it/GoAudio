@@ -6,30 +6,29 @@ import {
 } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import LogoutIcon from '@mui/icons-material/Logout'; // Ícone para o botão de sair
 import EmpresaModal from '../components/EmpresaModal';
-import { useData } from '../context/DataContext'; // Importa o nosso hook
+import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext'; // 1. Importe o nosso hook de autenticação
 
 const CompanySelectionPage = () => {
   const navigate = useNavigate();
-  // 1. Pega os dados E a função de salvar do nosso "cérebro"
-  const { empresas, loading, addEmpresa } = useData();
+  const { empresas, loading } = useData();
+  const { logout } = useAuth(); // 2. Obtenha a função de logout do contexto
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSelectCompany = (companyId) => {
     navigate(`/empresa/${companyId}/dashboard`);
   };
 
-  // 2. A função de salvar agora chama a função do DataContext
-  const handleSaveEmpresa = async (novaEmpresa) => {
-    const { error } = await addEmpresa(novaEmpresa);
+  const handleSaveEmpresa = (novaEmpresa) => {
+    console.log("Nova empresa salva:", novaEmpresa);
+  };
 
-    if (error) {
-      alert("Ocorreu um erro ao salvar a empresa. Verifique o console.");
-    } else {
-      // Sucesso! A lista de empresas na tela será atualizada automaticamente
-      // porque o DataContext notificou a alteração.
-      console.log("Empresa salva com sucesso!");
-    }
+  // 3. Crie a função para lidar com o logout
+  const handleLogout = () => {
+    logout();
+    navigate('/login'); // Redireciona para a página de login
   };
 
   return (
@@ -40,6 +39,14 @@ const CompanySelectionPage = () => {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               GoAudio - Gestão de Saúde Auditiva
             </Typography>
+            {/* 4. Adicione o botão de Sair (Logoff) ao cabeçalho */}
+            <Button 
+              color="inherit" 
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+            >
+              Sair
+            </Button>
           </Toolbar>
         </AppBar>
         <Container maxWidth="md" sx={{ mt: 8, mb: 4 }}>
