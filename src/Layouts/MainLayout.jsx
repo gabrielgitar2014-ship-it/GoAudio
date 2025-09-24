@@ -10,7 +10,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useAuth } from '../context/AuthContext'; // 1. Importe o nosso hook de autenticação
+import { useAuth } from '../context/AuthContext';
 
 const drawerWidth = 240;
 
@@ -18,19 +18,17 @@ const MainLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { companyId } = useParams();
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // 2. Obtenha os dados do utilizador e a função de logout
+  const { user, logout } = useAuth();
 
-  // 3. CRIE O MENU DINAMICAMENTE COM BASE NA FUNÇÃO DO UTILIZADOR
+  // Itens principais do menu, visíveis para todos
   const mainMenuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: `/empresa/${companyId}/dashboard` },
     { text: 'Funcionários', icon: <PeopleIcon />, path: `/empresa/${companyId}/funcionarios` },
     { text: 'Audiometrias', icon: <AssessmentIcon />, path: `/empresa/${companyId}/audiometrias` },
   ];
 
-  // Adiciona o botão "Trocar Empresa" APENAS se o utilizador for um fonoaudiólogo
-  if (user?.role === 'fono') {
-    mainMenuItems.push({ text: 'Trocar Empresa', icon: <BusinessIcon />, path: `/` });
-  }
+  // Item do rodapé, específico do administrador
+  const footerMenuItem = { text: 'Trocar Empresa', icon: <BusinessIcon />, path: `/` };
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -42,12 +40,14 @@ const MainLayout = () => {
   };
 
   const drawerContent = (
-    <div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar>
         <Typography variant="h6" sx={{ color: 'primary.main' }}>Menu Principal</Typography>  
       </Toolbar>
       <Divider />
-      <List>
+      
+      {/* A lista principal cresce, empurrando o rodapé para baixo */}
+      <List sx={{ flexGrow: 1 }}>
         {mainMenuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton component={RouterLink} to={item.path} onClick={handleDrawerToggle}>
@@ -57,7 +57,22 @@ const MainLayout = () => {
           </ListItem>
         ))}
       </List>
-    </div>
+      
+      {/* O rodapé SÓ aparece se o utilizador for 'fono' */}
+      {user?.role === 'fono' && (
+        <Box>
+          <Divider />
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton component={RouterLink} to={footerMenuItem.path} onClick={handleDrawerToggle}>
+                <ListItemIcon>{footerMenuItem.icon}</ListItemIcon>
+                <ListItemText primary={footerMenuItem.text} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </Box>
+      )}
+    </Box>
   );
 
   return (
@@ -77,7 +92,7 @@ const MainLayout = () => {
             Gestão de Saúde Auditiva
           </Typography>
 
-          {/* 4. EXIBA O BOTÃO DE LOGOFF NO HEADER APENAS SE FOR UM UTILIZADOR DE EMPRESA */}
+          {/* O botão de Sair SÓ aparece se o utilizador for da 'empresa' */}
           {user?.role === 'empresa' && (
             <Button 
               color="inherit" 
