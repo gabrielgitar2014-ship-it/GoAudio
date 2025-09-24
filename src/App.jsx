@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { CssBaseline, createTheme, ThemeProvider } from '@mui/material';
 import { DataProvider } from './context/DataContext';
 
-import MainLayout from './layouts/MainLayout';
+import MainLayout from './Layouts/MainLayout';
 import CompanySelectionPage from './pages/CompanySelectionPage';
 import DashboardPage from './pages/DashboardPage';
 // MUDANÇA AQUI: Importa o novo nome do ficheiro
