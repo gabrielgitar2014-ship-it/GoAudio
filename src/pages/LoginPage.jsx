@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert 
+  Container, Paper, Typography, TextField, Button, Box, CircularProgress, Alert,
+  InputAdornment, IconButton
 } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const LoginPage = () => {
   const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // 1. Estado para controlar a visibilidade do token
+  const [showToken, setShowToken] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -22,16 +27,21 @@ const LoginPage = () => {
     if (authError) {
       setError(authError);
     } else {
-      // Redirecionamento inteligente com base na função
       if (user.role === 'fono') {
-        navigate('/'); // Fonoaudiólogo vai para a seleção de empresas
+        navigate('/');
       } else if (user.role === 'empresa' && user.empresaId) {
-        navigate(`/empresa/${user.empresaId}/dashboard`); // Empresa vai direto para o seu dashboard
+        navigate(`/empresa/${user.empresaId}/dashboard`);
       } else {
         setError('Configuração de utilizador inválida.');
       }
     }
     setLoading(false);
+  };
+
+  // 2. Funções para alternar a visibilidade
+  const handleClickShowToken = () => setShowToken((show) => !show);
+  const handleMouseDownToken = (event) => {
+    event.preventDefault();
   };
 
   return (
@@ -51,6 +61,22 @@ const LoginPage = () => {
             autoFocus
             value={token}
             onChange={(e) => setToken(e.target.value)}
+            // 3. Lógica de visibilidade aplicada aqui
+            type={showToken ? 'text' : 'password'}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle token visibility"
+                    onClick={handleClickShowToken}
+                    onMouseDown={handleMouseDownToken}
+                    edge="end"
+                  >
+                    {showToken ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           {error && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
           <Button
