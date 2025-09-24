@@ -1,0 +1,53 @@
+{
+  "name": "GoAudio",
+  "short_name": "GoAudio",
+  "description": "Gerenciamento de saúde auditiva para fonoaudiólogos.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0EA5A4",
+  "theme_color": "#0EA5A4",
+  "categories": [
+    "health",
+    "medical",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/saude-auditiva-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/saude-auditiva-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/saude-auditiva-icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo paciente",
+      "short_name": "Paciente",
+      "description": "Cadastrar novo paciente.",
+      "url": "/pacientes/novo"
+    },
+    {
+      "name": "Avaliações",
+      "short_name": "Avaliações",
+      "description": "Ir para avaliações auditivas.",
+      "url": "/avaliacoes"
+    }
+  ]
+}
