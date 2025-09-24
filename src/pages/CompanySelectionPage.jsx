@@ -6,15 +6,15 @@ import {
 } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import LogoutIcon from '@mui/icons-material/Logout'; // Ícone para o botão de sair
+import LogoutIcon from '@mui/icons-material/Logout';
 import EmpresaModal from '../components/EmpresaModal';
 import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext'; // 1. Importe o nosso hook de autenticação
+import { useAuth } from '../context/AuthContext';
 
 const CompanySelectionPage = () => {
   const navigate = useNavigate();
   const { empresas, loading } = useData();
-  const { logout } = useAuth(); // 2. Obtenha a função de logout do contexto
+  const { logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSelectCompany = (companyId) => {
@@ -25,21 +25,19 @@ const CompanySelectionPage = () => {
     console.log("Nova empresa salva:", novaEmpresa);
   };
 
-  // 3. Crie a função para lidar com o logout
   const handleLogout = () => {
     logout();
-    navigate('/login'); // Redireciona para a página de login
+    navigate('/login');
   };
 
   return (
     <>
-      <Box sx={{ flexGrow: 1, backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
-        <AppBar position="static">
+      <Box sx={{ flexGrow: 1, backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
+        <AppBar position="static" elevation={1} color="primary">
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               GoAudio - Gestão de Saúde Auditiva
             </Typography>
-            {/* 4. Adicione o botão de Sair (Logoff) ao cabeçalho */}
             <Button 
               color="inherit" 
               startIcon={<LogoutIcon />}
@@ -49,13 +47,13 @@ const CompanySelectionPage = () => {
             </Button>
           </Toolbar>
         </AppBar>
-        <Container maxWidth="md" sx={{ mt: 8, mb: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: 5, mb: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Typography variant="h4" gutterBottom>
-              Selecione uma Empresa para Gerenciar
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+              Selecione uma Empresa
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
-              Escolha uma das empresas abaixo ou adicione uma nova.
+              Escolha um cliente para iniciar a gestão ou adicione um novo.
             </Typography>
           </Box>
           
@@ -66,6 +64,7 @@ const CompanySelectionPage = () => {
               size="large"
               startIcon={<AddCircleOutlineIcon />}
               onClick={() => setIsModalOpen(true)}
+              sx={{ borderRadius: '20px', textTransform: 'none', px: 4, py: 1 }}
             >
               Cadastrar Nova Empresa
             </Button>
@@ -76,14 +75,29 @@ const CompanySelectionPage = () => {
               <CircularProgress />
             </Box>
           ) : (
-            <Grid container spacing={4}>
+            <Grid container spacing={3}>
               {empresas.map((company) => (
                 <Grid item xs={12} sm={6} md={4} key={company.id}>
-                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: '0.3s', '&:hover': { transform: 'scale(1.05)', boxShadow: 6 } }}>
-                    <CardActionArea onClick={() => handleSelectCompany(company.id)} sx={{ flexGrow: 1 }}>
+                  {/* Cartão com bordas mais suaves e curvas */}
+                  <Card sx={{ 
+                    height: '100%', 
+                    borderRadius: '16px', // Bordas mais curvas
+                    transition: 'all 0.3s ease-in-out',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    '&:hover': { 
+                      transform: 'translateY(-5px)', 
+                      boxShadow: '0 8px 25px -5px rgba(0,0,0,0.15)',
+                    } 
+                  }}>
+                    <CardActionArea onClick={() => handleSelectCompany(company.id)} sx={{ height: '100%', display: 'flex' }}>
                       <CardContent sx={{ textAlign: 'center', p: 3 }}>
-                        <BusinessIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                        <Typography gutterBottom variant="h6" component="div">
+                        {/* Ícone menor */}
+                        <BusinessIcon sx={{ 
+                          fontSize: 48, 
+                          color: 'primary.main', 
+                          mb: 2 
+                        }} />
+                        <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: '600' }}>
                           {company.razao_social}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -108,3 +122,4 @@ const CompanySelectionPage = () => {
 };
 
 export default CompanySelectionPage;
+
