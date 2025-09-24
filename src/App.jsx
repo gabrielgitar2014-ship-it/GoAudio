@@ -2,6 +2,9 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { CssBaseline, createTheme, ThemeProvider } from '@mui/material';
 import { DataProvider } from './context/DataContext';
+import { AuthProvider } from './context/AuthContext'; 
+import LoginPage from './pages/LoginPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import MainLayout from './Layouts/MainLayout';
 import CompanySelectionPage from './pages/CompanySelectionPage';
@@ -21,27 +24,34 @@ const theme = createTheme({
   },
 });
 
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <AuthProvider> {/* 2. Envolva tudo com o AuthProvider */}
+        <DataProvider>
+          <Routes>
+            {/* Rota pública de login */}
+            <Route path="/login" element={<LoginPage />} />
 
-      <DataProvider>
+            {/* Rotas protegidas */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<CompanySelectionPage />} />
+              <Route path="/gerenciar-empresas" element={<GerenciarEmpresas />} />
+              <Route path="/empresa/:companyId" element={<MainLayout />}>
+                <Route index element={<DashboardPage />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="funcionarios" element={<GerenciarFuncionarios />} />
+                <Route path="funcionarios/:id" element={<FuncionarioDetalhe />} />
+                <Route path="audiometrias" element={<LancamentoAudiometria />} />
+                <Route path="grafico" element={<ChartPage />} />
+              </Route>
+            </Route>
 
-      <Routes>
-        <Route path="/" element={<CompanySelectionPage />} />
-        {/* MUDANÇA AQUI: Usa o novo nome do componente na rota */}
-        <Route path="/gerenciar-empresas" element={<GerenciarEmpresas />} />
-        <Route path="/empresa/:companyId" element={<MainLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="funcionarios" element={<GerenciarFuncionarios />} />
-          <Route path="funcionarios/:id" element={<FuncionarioDetalhe />} />
-          <Route path="audiometrias" element={<LancamentoAudiometria />} />
-          <Route path="grafico" element={<ChartPage />} />
-        </Route>
-      </Routes>
-      </DataProvider>
+          </Routes>
+        </DataProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
