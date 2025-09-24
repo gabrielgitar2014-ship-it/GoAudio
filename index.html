@@ -1,20 +1,54 @@
 <!doctype html>
-<html lang="pt-pt">
+<html lang="pt-BR">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Tags Essenciais para PWA -->
-    <meta name="theme-color" content="#ffffff">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-    <link rel="mask-icon" href="/masked-icon.svg" color="#FFFFFF">
-    <!-- Fim das Tags PWA -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
 
-    <title>GoAudio - Gestão Auditiva</title>
+    <title>GoAudio — Gestão Auditiva</title>
+
+    <!-- Manifest & tema -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0EA5A4" />
+
+    <!-- Ícones (usando os arquivos já gerados) -->
+    <!-- Favicon padrão (browsers modernos aceitam 192/512 também) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
+
+    <!-- iOS: usar PNG grande como apple-touch-icon (sem sizes para fallback automático) -->
+    <link rel="apple-touch-icon" href="/saude-auditiva-icon-192.png" />
+
+    <!-- PWA hints -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GoAudio" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Metadados sociais (opcional, melhora o compartilhamento) -->
+    <meta property="og:title" content="GoAudio — Gestão Auditiva" />
+    <meta property="og:description" content="Gerenciamento de saúde auditiva para fonoaudiólogos." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/saude-auditiva-icon-1024.png" />
   </head>
   <body>
+    <noscript>Ative o JavaScript para usar o GoAudio.</noscript>
     <div id="root"></div>
+
+    <!-- App -->
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- (Opcional) Registro do Service Worker caso não use plugin Vite PWA -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .catch((err) => console.debug("[SW] Falha ao registrar:", err));
+        });
+      }
+    </script>
   </body>
 </html>
