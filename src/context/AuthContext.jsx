@@ -1,74 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import React, { createContext, useContext } from 'react';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Este log provará que a nova versão está rodando
+  console.log("EXECUTANDO AuthContext SIMPLIFICADO PARA TESTE");
 
-  useEffect(() => {
-    // Função para buscar o perfil de um usuário de forma segura
-    const fetchProfile = async (userId) => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-        if (error) throw error;
-        setProfile(data || null);
-      } catch (profileError) {
-        console.error("Erro ao buscar o perfil do usuário:", profileError);
-        setProfile(null);
-      }
-    };
-
-    // Função para verificar a sessão inicial
-    const checkUserSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const currentUser = session?.user;
-        setUser(currentUser ?? null);
-
-        if (currentUser) {
-          await fetchProfile(currentUser.id);
-        } else {
-          setProfile(null);
-        }
-      } catch (e) {
-        console.error("Erro ao verificar a sessão:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkUserSession();
-
-    // Listener para mudanças no estado de autenticação (login, logout)
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const currentUser = session?.user;
-      setUser(currentUser ?? null);
-      if (currentUser) {
-        await fetchProfile(currentUser.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    // Função de limpeza para remover o listener
-    return () => {
-      // Verificação de segurança para evitar o erro
-      authListener?.subscription?.unsubscribe();
-    };
-  }, []);
-
+  // Fornecemos valores falsos, sem nenhuma chamada ao Supabase.
   const value = {
-    user,
-    profile,
-    loading,
-    logout: () => supabase.auth.signOut(),
+    user: null,
+    profile: null,
+    loading: false, // Definido como 'false' para não travar no loading
+    logout: () => console.log("Logout de teste chamado!"),
   };
 
   return (
