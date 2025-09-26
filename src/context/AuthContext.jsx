@@ -1,17 +1,68 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Este log provará que a nova versão está rodando
-  console.log("EXECUTANDO AuthContext SIMPLIFICADO PARA TESTE");
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fornecemos valores falsos, sem nenhuma chamada ao Supabase.
+  useEffect(() => {
+    const fetchProfile = async (userId) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        if (error) throw error;
+        setProfile(data || null);
+      } catch (profileError) {
+        console.error("Erro ao buscar o perfil do usuário:", profileError);
+        setProfile(null);
+      }
+    };
+
+    const checkUserSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user;
+        setUser(currentUser ?? null);
+        if (currentUser) {
+          await fetchProfile(currentUser.id);
+        }
+      } catch (e) {
+        console.error("Erro ao verificar a sessão:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUserSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
+      setProfile(null); // Limpa o perfil antigo
+      if (currentUser) {
+        await fetchProfile(currentUser.id);
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // O objeto 'value' que o nosso contexto irá fornecer para a aplicação
   const value = {
-    user: null,
-    profile: null,
-    loading: false, // Definido como 'false' para não travar no loading
-    logout: () => console.log("Logout de teste chamado!"),
+    user,
+    profile,
+    loading,
+    // ADICIONADO: A função de login que faltava
+    login: (email, password) => supabase.auth.signInWithPassword({ email, password }),
+    logout: () => supabase.auth.signOut(),
   };
 
   return (
