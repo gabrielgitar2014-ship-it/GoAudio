@@ -36,18 +36,5 @@
       "purpose": "any maskable"
     }
   ],
-  "shortcuts": [
-    {
-      "name": "Novo paciente",
-      "short_name": "Paciente",
-      "description": "Cadastrar novo paciente.",
-      "url": "/pacientes/novo"
-    },
-    {
-      "name": "Avaliações",
-      "short_name": "Avaliações",
-      "description": "Ir para avaliações auditivas.",
-      "url": "/avaliacoes"
-    }
-  ]
+  
 }
