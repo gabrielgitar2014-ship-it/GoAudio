@@ -9,52 +9,58 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSessionAndProfile = async () => {
+    // Função para buscar o perfil de um usuário
+    const fetchProfile = async (userId) => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        if (error) throw error;
+        setProfile(data || null);
+      } catch (profileError) {
+        console.error("Erro ao buscar o perfil do usuário:", profileError);
+        setProfile(null);
+      }
+    };
 
+    // Função para verificar a sessão inicial
+    const checkUserSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         const currentUser = session?.user;
         setUser(currentUser ?? null);
-        
+
         if (currentUser) {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .single();
-          
-          if (error) throw error;
-          setProfile(data);
+          await fetchProfile(currentUser.id);
         } else {
           setProfile(null);
         }
-      } catch (error) {
-        console.error("Erro na sessão inicial:", error);
-        setProfile(null);
-        setUser(null);
+      } catch (e) {
+        console.error("Erro ao verificar a sessão:", e);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSessionAndProfile();
+    checkUserSession();
 
+    // Listener para mudanças no estado de autenticação (login, logout)
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user;
       setUser(currentUser ?? null);
       if (currentUser) {
-        const { data } = await supabase.from('profiles').select('*').eq('user_id', currentUser.id).single();
-        setProfile(data);
+        await fetchProfile(currentUser.id);
       } else {
         setProfile(null);
       }
-      // O loading principal só acontece na primeira carga
-      setLoading(false); 
     });
 
+    // Função de limpeza para remover o listener quando o componente não for mais necessário
     return () => {
-      authListener.subscription.unsubscribe();
+      // Adicionada verificação de segurança para evitar o erro
+      authListener?.subscription?.unsubscribe();
     };
   }, []);
 
@@ -65,9 +71,6 @@ export const AuthProvider = ({ children }) => {
     logout: () => supabase.auth.signOut(),
   };
 
-  // ALTERAÇÃO PRINCIPAL AQUI:
-  // Renderiza os 'children' (sua aplicação) imediatamente.
-  // O estado de 'loading' ainda é passado no 'value' para ser usado pelo ProtectedRoute.
   return (
     <AuthContext.Provider value={value}>
       {children}
