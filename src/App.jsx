@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 
 // Importa os componentes de rota e layout
 import ProtectedRoute from './components/ProtectedRoute';
-import MainLayout from './layouts/MainLayout';
+import MainLayout from './Layouts/MainLayout';
 
 // Importa todas as páginas da aplicação
 import LoginPage from './pages/LoginPage';
