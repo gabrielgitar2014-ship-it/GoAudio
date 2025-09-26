@@ -8,11 +8,12 @@ const Header = () => {
       <Toolbar>
         <HearingIcon sx={{ mr: 2 }} />
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-         Goaudio - Exame Audiométrico
+        AudioFacility - Solução em gerenciamento
         </Typography>
       </Toolbar>
     </AppBar>
   );
 };
+
 
 export default Header;
