@@ -5,31 +5,52 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null); // <-- NOVO: Estado para o perfil
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    const fetchSessionAndProfile = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
-      if (session?.user) {
-        // Se houver uma sessão, busca o perfil do usuário
-        await fetchProfile(session.user.id);
+        const currentUser = session?.user;
+        setUser(currentUser ?? null);
+        
+        if (currentUser) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+          
+          if (error) throw error;
+          setProfile(data);
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("Erro na sessão inicial:", error);
+        setProfile(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchSession();
+    fetchSessionAndProfile();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
-      if (event === 'SIGNED_IN' && session?.user) {
-        await fetchProfile(session.user.id);
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
+      if (currentUser) {
+        const { data } = await supabase.from('profiles').select('*').eq('user_id', currentUser.id).single();
+        setProfile(data);
+      } else {
+        setProfile(null);
       }
-      if (event === 'SIGNED_OUT') {
-        setProfile(null); // Limpa o perfil no logout
-      }
+      // O loading principal só acontece na primeira carga
+      setLoading(false); 
     });
 
     return () => {
@@ -37,39 +58,23 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // <-- NOVA FUNÇÃO: Busca o perfil na tabela 'profiles'
-  const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-    
-    if (error) {
-      console.error("Erro ao buscar perfil:", error);
-      setProfile(null);
-    } else {
-      setProfile(data);
-    }
-  };
-
   const value = {
     user,
-    profile, // <-- NOVO: Disponibiliza o perfil no contexto
+    profile,
     loading,
     logout: () => supabase.auth.signOut(),
-    // Mantenha suas outras funções de login, etc.
   };
 
-  // Não renderiza nada até que a sessão e o perfil inicial tenham sido carregados
+  // ALTERAÇÃO PRINCIPAL AQUI:
+  // Renderiza os 'children' (sua aplicação) imediatamente.
+  // O estado de 'loading' ainda é passado no 'value' para ser usado pelo ProtectedRoute.
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook customizado para usar o contexto
 export const useAuth = () => {
   return useContext(AuthContext);
 };
