@@ -48,7 +48,7 @@ const CompanySelectionPage = () => {
         <AppBar position="static" elevation={1} color="primary">
           <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              GoAudio - Painel do Fonoaudiólogo
+              AudioFacility - Painel do Fonoaudiólogo
             </Typography>
             <Button color="inherit" startIcon={<LogoutIcon />} onClick={handleLogout}>
               Sair
@@ -120,4 +120,5 @@ const CompanySelectionPage = () => {
 };
 
 export default CompanySelectionPage;
+
 
