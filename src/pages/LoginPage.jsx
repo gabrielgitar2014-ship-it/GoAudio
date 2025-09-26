@@ -42,7 +42,7 @@ const LoginPage = () => {
     <Container component="main" maxWidth="xs" sx={{ mt: 8 }}>
       <Paper elevation={3} sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography component="h1" variant="h5">
-          Acesso ao Sistema GoAudio
+          Acesso ao Sistema AudioFacility
         </Typography>
         <Box component="form" onSubmit={handleLogin} sx={{ mt: 1, width: '100%' }}>
           <TextField
@@ -90,5 +90,6 @@ const LoginPage = () => {
     </Container>
   );
 };
+
 
 export default LoginPage;
