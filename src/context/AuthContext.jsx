@@ -1,3 +1,4 @@
+// AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -41,10 +42,10 @@ export const AuthProvider = ({ children }) => {
 
     checkUserSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const currentUser = session?.user;
       setUser(currentUser ?? null);
-      setProfile(null); // Limpa o perfil antigo
+      setProfile(null);
       if (currentUser) {
         await fetchProfile(currentUser.id);
       }
@@ -55,23 +56,37 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // O objeto 'value' que o nosso contexto irá fornecer para a aplicação
+  // ✨ NOVO: função chamada pelo RegisterPage
+  const registerWithMasterKey = async (masterKey, email, password, extra = {}) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('register-with-master-key', {
+        body: {
+          masterKey,
+          email,
+          password,
+          ...extra, // ex.: { documento }
+        },
+      });
+      // mantenho o mesmo contrato que você espera no RegisterPage:
+      // { error: ... } quando der ruim; sem error quando OK
+      if (error) return { error };
+      return { data, error: null };
+    } catch (err) {
+      // alinhar com o RegisterPage, que lê registerError.message
+      return { error: err };
+    }
+  };
+
   const value = {
     user,
     profile,
     loading,
-    // ADICIONADO: A função de login que faltava
     login: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     logout: () => supabase.auth.signOut(),
+    registerWithMasterKey, // ✅ exposto para o RegisterPage
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
