@@ -1,119 +1,75 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Box, CircularProgress, Typography } from '@mui/material'; // Para uma tela de loading melhor
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState(null); // <-- NOVO: Estado para o perfil
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // A função agora é auto-invocada e tem um try...catch para lidar com erros
-    (async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
 
-        if (session?.user) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
-          
-          if (profileError) throw profileError;
-          setProfile(profileData);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar sessão e perfil:", error);
-        // Em caso de erro, garantimos que o logout é feito para evitar loops
-        setUser(null);
-        setProfile(null);
-      } finally {
-        // Esta linha é executada SEMPRE, quer haja sucesso ou erro
-        setLoading(false);
+      if (session?.user) {
+        // Se houver uma sessão, busca o perfil do usuário
+        await fetchProfile(session.user.id);
       }
-    })();
+      setLoading(false);
+    };
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setProfile(null); // Reseta o perfil para garantir que buscamos o novo
+    fetchSession();
 
-        if (session?.user) {
-          try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
-            if (profileError) throw profileError;
-            setProfile(profileData);
-          } catch (error) {
-            console.error("Erro ao buscar perfil no onAuthStateChange:", error);
-          }
-        }
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      if (event === 'SIGNED_IN' && session?.user) {
+        await fetchProfile(session.user.id);
       }
-    );
+      if (event === 'SIGNED_OUT') {
+        setProfile(null); // Limpa o perfil no logout
+      }
+    });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  const login = async (email, password) => {
-    return supabase.auth.signInWithPassword({ email, password });
-  };
-
-  const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-  };
-
-  const registerWithMasterKey = async (chaveMestra, email, password, dadosAdicionais) => {
-    return supabase.functions.invoke('registrar-novo-usuario', {
-        body: {
-            chave_mestra: chaveMestra,
-            email: email,
-            password: password,
-            dados_adicionais: dadosAdicionais,
-        },
-    });
+  // <-- NOVA FUNÇÃO: Busca o perfil na tabela 'profiles'
+  const fetchProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error) {
+      console.error("Erro ao buscar perfil:", error);
+      setProfile(null);
+    } else {
+      setProfile(data);
+    }
   };
 
   const value = {
     user,
-    profile,
+    profile, // <-- NOVO: Disponibiliza o perfil no contexto
     loading,
-    login,
-    logout,
-    registerWithMasterKey,
+    logout: () => supabase.auth.signOut(),
+    // Mantenha suas outras funções de login, etc.
   };
 
-  // Uma tela de carregamento mais informativa e profissional
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-        <Typography sx={{ mt: 2 }}>A carregar sessão...</Typography>
-      </Box>
-    );
-  }
-
+  // Não renderiza nada até que a sessão e o perfil inicial tenham sido carregados
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
+// Hook customizado para usar o contexto
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
-  }
-  return context;
+  return useContext(AuthContext);
 };
