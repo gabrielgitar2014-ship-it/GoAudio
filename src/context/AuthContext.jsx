@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Função para buscar o perfil de um usuário
+    // Função para buscar o perfil de um usuário de forma segura
     const fetchProfile = async (userId) => {
       try {
         const { data, error } = await supabase
@@ -57,9 +57,9 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    // Função de limpeza para remover o listener quando o componente não for mais necessário
+    // Função de limpeza para remover o listener
     return () => {
-      // Adicionada verificação de segurança para evitar o erro
+      // Verificação de segurança para evitar o erro
       authListener?.subscription?.unsubscribe();
     };
   }, []);
